@@ -341,7 +341,7 @@ func TestGraphML_RegisterKey(t *testing.T) {
 	assert.Equal(t, keyName, key.Name)
 	assert.Equal(t, keyDesc, key.Description)
 	assert.Equal(t, DoubleType, key.KeyType)
-	val, err := strconv.ParseFloat(key.DefaultValue, 64)
+	val, err := strconv.ParseFloat(*key.DefaultValue, 64)
 	require.NoError(t, err, "failed to parse key value")
 	assert.Equal(t, keyDefault, val)
 	assert.Equal(t, KeyForNode, key.Target)
