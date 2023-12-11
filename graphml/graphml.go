@@ -108,7 +108,7 @@ type Key struct {
 	// Provides human readable description
 	Description string `xml:"desc,omitempty"`
 	// The default value
-	DefaultValue string `xml:"default,omitempty"`
+	DefaultValue *string `xml:"default,omitempty"`
 }
 
 // Data the data function definition.
@@ -286,9 +286,11 @@ func (gml *GraphML) RegisterKey(target KeyForElement, name, description string, 
 
 	// store default value
 	if defaultValue != nil {
-		if key.DefaultValue, err = stringValueIfSupported(defaultValue, key.KeyType); err != nil {
+		strVal, err := stringValueIfSupported(defaultValue, key.KeyType)
+		if err != nil {
 			return nil, err
 		}
+		key.DefaultValue = &strVal
 	}
 
 	// store key
@@ -443,8 +445,8 @@ func attributesForData(data []*Data, target KeyForElement, gml *GraphML) (map[st
 		// use data value of default value
 		dataValue := d.Value
 		if dataValue == "" {
-			if key.DefaultValue != "" {
-				dataValue = key.DefaultValue
+			if key.DefaultValue != nil {
+				dataValue = *key.DefaultValue
 			} else {
 				return nil, errors.New(fmt.Sprintf("data has no value and key id: %s has no default value", d.Key))
 			}
@@ -458,11 +460,11 @@ func attributesForData(data []*Data, target KeyForElement, gml *GraphML) (map[st
 	}
 	// fill defaults for undefined keys
 	for _, k := range keysForElement(gml.Keys, target) {
-		if k.DefaultValue == "" && k.KeyType != StringType {
+		if k.DefaultValue == nil {
 			continue
 		}
 		if _, ok := attr[k.Name]; !ok {
-			val, err := valueByType(k.DefaultValue, k.KeyType, gml.keyTypeDefault)
+			val, err := valueByType(*k.DefaultValue, k.KeyType, gml.keyTypeDefault)
 			if err != nil {
 				return nil, errors.New("could not parse default value for key id: " + k.ID)
 			}
@@ -522,9 +524,9 @@ func createDataWithKey(value interface{}, key *Key) (data *Data, err error) {
 		if data.Value, err = stringValueIfSupported(value, key.KeyType); err == nil {
 			return data, nil
 		}
-	} else if key.Target == KeyForAll && len(key.DefaultValue) > 0 {
+	} else if key.Target == KeyForAll && key.DefaultValue != nil {
 		// use default value
-		data.Value = key.DefaultValue
+		data.Value = *key.DefaultValue
 	} else {
 		// raise error
 		return nil, errors.New(fmt.Sprintf("empty attribute without default value: %s", key.Name))
