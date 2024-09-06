@@ -550,26 +550,26 @@ func (e *Edge) TargetNode() *Node {
 
 // RemoveAttribute removes the attribute associated with the given key ID from
 // the data of this GraphML.
-func (gml *GraphML) RemoveAttribute(key string) {
-	gml.Data = removeAttributeFromData(gml.Data, key)
+func (gml *GraphML) RemoveAttribute(keyID string) {
+	gml.Data = removeAttributeFromData(gml.Data, keyID)
 }
 
 // RemoveAttribute removes the attribute associated with the given key ID from
 // the data of this graph.
-func (gr *Graph) RemoveAttribute(key string) {
-	gr.Data = removeAttributeFromData(gr.Data, key)
+func (gr *Graph) RemoveAttribute(keyID string) {
+	gr.Data = removeAttributeFromData(gr.Data, keyID)
 }
 
 // RemoveAttribute removes the attribute associated with the given key ID from
 // the data of this node.
-func (n *Node) RemoveAttribute(key string) {
-	n.Data = removeAttributeFromData(n.Data, key)
+func (n *Node) RemoveAttribute(keyID string) {
+	n.Data = removeAttributeFromData(n.Data, keyID)
 }
 
 // RemoveAttribute removes the attribute associated with the given key ID from
 // the data of this edge.
-func (e *Edge) RemoveAttribute(key string) {
-	e.Data = removeAttributeFromData(e.Data, key)
+func (e *Edge) RemoveAttribute(keyID string) {
+	e.Data = removeAttributeFromData(e.Data, keyID)
 }
 
 // removeAttributeFromData removes the attribute associated with the given key ID from
@@ -585,38 +585,38 @@ func removeAttributeFromData(data []*Data, key string) []*Data {
 	return data
 }
 
-// SetAttribute sets the value of the attribute associated with the given key ID
+// SetAttribute sets the value of the attribute associated with the given key name
 // in the data of this GraphML.
-func (gml *GraphML) SetAttribute(key string, val interface{}) (err error) {
-	gml.Data, err = gml.setAttributeForData(gml.Data, KeyForGraphML, key, val)
+func (gml *GraphML) SetAttribute(keyName string, val interface{}) (err error) {
+	gml.Data, err = gml.setAttributeForData(gml.Data, KeyForGraphML, keyName, val)
 	return
 }
 
-// SetAttribute sets the value of the attribute associated with the given key ID
+// SetAttribute sets the value of the attribute associated with the given key name
 // in the data of this graph.
-func (gr *Graph) SetAttribute(key string, val interface{}) (err error) {
-	gr.Data, err = gr.parent.setAttributeForData(gr.Data, KeyForGraph, key, val)
+func (gr *Graph) SetAttribute(keyName string, val interface{}) (err error) {
+	gr.Data, err = gr.parent.setAttributeForData(gr.Data, KeyForGraph, keyName, val)
 	return
 }
 
-// SetAttribute sets the value of the attribute associated with the given key ID
+// SetAttribute sets the value of the attribute associated with the given key name
 // in the data of this node.
-func (n *Node) SetAttribute(key string, val interface{}) (err error) {
-	n.Data, err = n.graph.parent.setAttributeForData(n.Data, KeyForNode, key, val)
+func (n *Node) SetAttribute(keyName string, val interface{}) (err error) {
+	n.Data, err = n.graph.parent.setAttributeForData(n.Data, KeyForNode, keyName, val)
 	return
 }
 
-// SetAttribute sets the value of the attribute associated with the given key ID
+// SetAttribute sets the value of the attribute associated with the given key name
 // in the data of this edge.
-func (e *Edge) SetAttribute(key string, val interface{}) (err error) {
-	e.Data, err = e.graph.parent.setAttributeForData(e.Data, KeyForEdge, key, val)
+func (e *Edge) SetAttribute(keyName string, val interface{}) (err error) {
+	e.Data, err = e.graph.parent.setAttributeForData(e.Data, KeyForEdge, keyName, val)
 	return
 }
 
 // setAttributeForData sets the value of the attribute associated with
-// the given key ID in the given data.
-func (gml *GraphML) setAttributeForData(data []*Data, target KeyForElement, key string, val interface{}) ([]*Data, error) {
-	newData, err := gml.createDataAttribute(val, key, target)
+// the given key name in the given data.
+func (gml *GraphML) setAttributeForData(data []*Data, target KeyForElement, name string, val interface{}) ([]*Data, error) {
+	newData, err := gml.createDataAttribute(val, name, target)
 	if err != nil {
 		return data, err
 	}
@@ -723,11 +723,11 @@ func (gml *GraphML) createDataAttributes(attributes map[string]interface{}, targ
 
 // createDataAttribute creates a single data object with given value, key name and target.
 // If there is no key with this name and target, a new one is registered.
-func (gml *GraphML) createDataAttribute(value interface{}, key string, target KeyForElement) (data *Data, err error) {
-	keyFunc := gml.GetKey(key, target)
+func (gml *GraphML) createDataAttribute(value interface{}, name string, target KeyForElement) (data *Data, err error) {
+	keyFunc := gml.GetKey(name, target)
 	if keyFunc == nil {
 		// register new Key
-		if keyFunc, err = gml.RegisterKey(target, key, "", reflect.TypeOf(value).Kind(), nil); err != nil {
+		if keyFunc, err = gml.RegisterKey(target, name, "", reflect.TypeOf(value).Kind(), nil); err != nil {
 			// failed
 			return nil, err
 		}
