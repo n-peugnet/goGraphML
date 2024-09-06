@@ -548,6 +548,26 @@ func (e *Edge) TargetNode() *Node {
 	return e.graph.GetNode(e.Target)
 }
 
+// SetID changes the ID of this node and update all its edges to use the new ID.
+// Returns an error if the ID is already taken.
+func (n *Node) SetID(newID string) error {
+	if _, exists := n.graph.nodesMap[newID]; exists {
+		return errors.New(fmt.Sprint("a node with this ID already exists: ", newID))
+	}
+	delete(n.graph.nodesMap, n.ID)
+	n.graph.nodesMap[newID] = n
+	for _, edge := range n.graph.Edges {
+		if edge.Source == n.ID {
+			edge.Source = newID
+		}
+		if edge.Target == n.ID {
+			edge.Target = newID
+		}
+	}
+	n.ID = newID
+	return nil
+}
+
 // RemoveAttribute removes the attribute associated with the given key ID from
 // the data of this GraphML.
 func (gml *GraphML) RemoveAttribute(key string) {

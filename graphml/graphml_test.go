@@ -979,3 +979,41 @@ func TestGraphML_AutomaticKeysGeneration(t *testing.T) {
 	require.NoError(t, err, "failed to add edge")
 	assert.Equal(t, "e2", edge.ID)
 }
+
+func TestSetID(t *testing.T) {
+	gml := NewGraphML("test document")
+	gr, err := gml.AddGraph("test graph", EdgeDirectionDirected, nil)
+	require.NoError(t, err, "failed to add graph")
+
+	// Add nodes
+	n1, err := gr.AddNode(nil, "#1")
+	require.NoError(t, err)
+	n2, err := gr.AddNode(nil, "#2")
+	require.NoError(t, err)
+	n3, err := gr.AddNode(nil, "#3")
+	require.NoError(t, err)
+
+	// Add edges
+	e1, err := gr.AddEdge(n1, n2, nil, EdgeDirectionDefault, "edge 1->2")
+	require.NoError(t, err, "failed to add edge 1->2")
+	e2, err := gr.AddEdge(n2, n3, nil, EdgeDirectionDefault, "edge 2->3")
+	require.NoError(t, err, "failed to add edge 2->3")
+	_, err = gr.AddEdge(n3, n1, nil, EdgeDirectionDefault, "edge 3->1")
+	require.NoError(t, err, "failed to add edge 3->1")
+
+	// Already existing ID
+	prevID := n2.ID
+	err = n2.SetID(n1.ID)
+	assert.Error(t, err, "SetID should fail")
+	assert.Equal(t, n2.ID, prevID)
+	assert.Equal(t, e1.Target, prevID)
+	assert.Equal(t, e2.Source, prevID)
+
+	// Non existing ID
+	id := "testID"
+	err = n2.SetID(id)
+	assert.NoError(t, err)
+	assert.Equal(t, n2.ID, id)
+	assert.Equal(t, e1.Target, id)
+	assert.Equal(t, e2.Source, id)
+}
